@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapper.PostMapper">
+
+    <resultMap id="PostResultMap" type="com.bean.Post">
+        <id column="Pid" property="pid"/>
+        <result column="Pcontent" property="pcontent"/>
+        <result column="PImage" property="pimage" jdbcType="VARBINARY" javaType="String" typeHandler="com.handler.PostPimageTypeHandler"/>
+        <result column="Pvideo" property="pvideo" jdbcType="VARCHAR" javaType="String" typeHandler="com.handler.PostPvideoTypeHandler"/>
+        <result column="Parentid" property="parentid" jdbcType="VARCHAR" javaType="String" typeHandler="com.handler.PostParentIdTypeHandler"/>
+        <result column="Ptime" property="ptime"/>
+        <result column="Ptags" property="ptags"/>
+        <result column="Pstatus" property="pstatus"/>
+
+        <association column="Publisher" property="publishaccountInfo" javaType="com.bean.AccountInfo">
+            <id column="Publisher" property="uid"/>
+            <result column="Username" property="username"/>
+            <result column="Avatar" property="avatar" jdbcType="VARBINARY" javaType="String" typeHandler="com.handler.AccountAvatarTypeHandler"/>
+        </association>
+
+        <association column="UserUid" property="userinfo" javaType="com.bean.UserInfo">
+            <id column="UserUid" property="useruid"/>
+            <result column="Nickname" property="nickname"/>
+        </association>
+    </resultMap>
+
+    <!-- Add more SQL mappings as needed -->
+</mapper>

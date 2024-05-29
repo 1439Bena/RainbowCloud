@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapper.AccountMapper">
+
+    <resultMap id="AccountResultMap" type="com.bean.AccountInfo">
+        <id column="Uid" property="uid"/>
+        <result column="Username" property="username"/>
+        <result column="Password" property="password"/>
+        <result column="Avatar" property="avatar" typeHandler="com.handler.AccountAvatarTypeHandler"/>
+        <result column="Email" property="email"/>
+        <result column="Aphone" property="aphone"/>
+        <result column="Registrationtime" property="registrationtime"/>
+        <result column="Astatus" property="astatus"/>
+
+        <association column="Nickname" property="userinfo" javaType="com.bean.UserInfo">
+            <result column="Nickname" property="nickname"/>
+        </association>
+    </resultMap>
+
+    <insert id="addAccount" parameterType="com.bean.AccountInfo">
+        INSERT INTO Accountinfo (Uid, Username, Password, Avatar, Email, Aphone, Registrationtime, Astatus)
+        VALUES (#{uid}, #{username}, #{password}, #{avatar}, #{email}, #{aphone}, #{registrationtime}, #{astatus})
+    </insert>
+
+    <insert id="signUpAccount" parameterType="com.bean.AccountInfo">
+        INSERT INTO Accountinfo (Uid, Username, Password, Email, Registrationtime, Astatus)
+        VALUES (#{uid}, #{username}, #{password}, #{email}, #{registrationtime}, #{astatus})
+    </insert>
+
+    <select id="signInAccount" parameterType="map" resultMap="AccountResultMap">
+        SELECT a.*, u.Nickname
+        FROM Accountinfo a
+                 JOIN UserInfo u ON a.Uid = u.UserUid
+        WHERE a.Username = #{username} AND a.Password = #{password}
+    </select>
+
+    <update id="updateAccount" parameterType="com.bean.AccountInfo">
+        UPDATE Accountinfo
+        SET Password = #{password}, Avatar = #{avatar}, Email = #{email}, Aphone = #{aphone}
+        WHERE Uid = #{uid}
+    </update>
+
+    <update id="updateAstatus" parameterType="map">
+        UPDATE Accountinfo
+        SET Astatus = #{astatus}
+        WHERE Uid = #{uid}
+    </update>
+
+    <select id="selectAccountsByPage" parameterType="map" resultMap="AccountResultMap">
+        <include refid="selectAccountsByPageSql"/>
+    </select>
+
+    <sql id="selectAccountsByPageSql">
+        SELECT *
+        FROM (
+        SELECT *, ROW_NUMBER() OVER(ORDER BY Uid) AS rownum
+        FROM Accountinfo
+        WHERE 1=1
+        <if test='accountInfo.username!= null and accountInfo.username!= ""'>
+            AND Username LIKE '%' + #{accountInfo.username} + '%'
+        </if>
+        <if test='accountInfo.aphone!= null and accountInfo.aphone!= ""'>
+            AND Aphone LIKE + '%', #{accountInfo.aphone} + '%'
+        </if>
+        <if test='accountInfo.email!= null and accountInfo.email!= ""'>
+            AND Email LIKE '%' + #{accountInfo.email} + '%'
+        </if>
+        ) AS t
+        WHERE rownum BETWEEN (#{page} - 1) * #{limit} + 1 AND #{page} * #{limit}
+    </sql>
+
+    <select id="selectByPageCount" parameterType="com.bean.AccountInfo" resultType="long">
+        SELECT COUNT(*)
+        FROM Accountinfo a
+        WHERE 1=1
+        <if test='accountInfo.username!= null'>
+            AND a.Username LIKE '%' + #{accountInfo.username} + '%'
+        </if>
+        <if test='accountInfo.aphone!= null'>
+            AND a.Aphone LIKE '%' + #{accountInfo.aphone} + '%'
+        </if>
+        <if test='accountInfo.email!= null'>
+            AND a.Email LIKE '%' + #{accountInfo.email} + '%'
+        </if>
+    </select>
+    <!-- Add more SQL mappings as needed -->
+</mapper>

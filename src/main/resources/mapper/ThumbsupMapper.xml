@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapper.ThumbsupMapper">
+
+    <select id="checkLiked" resultType="int" parameterType="map">
+        SELECT COUNT(Tid) FROM Thumbsup WHERE Tpostid = #{pid} AND Tuserid = #{uid}
+    </select>
+
+    <insert id="addLike" parameterType="map">
+        INSERT INTO Thumbsup (Tid, Tpostid, Tuserid, Tstatus) VALUES (#{tid}, #{pid}, #{uid}, 1)
+    </insert>
+
+    <update id="cancelLike" parameterType="map">
+        UPDATE Thumbsup SET Tstatus = 0 WHERE Tpostid = #{pid} AND Tuserid = #{uid}
+    </update>
+
+</mapper>

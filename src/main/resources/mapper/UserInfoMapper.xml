@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapper.UserInfoMapper">
+
+    <resultMap id="UserInfoResultMap" type="com.bean.UserInfo">
+        <!-- Map fields to the database columns -->
+        <id column="UserUid" property="useruid"/>
+        <result column="Nickname" property="nickname"/>
+        <result column="Gender" property="gender"/>
+        <result column="Birthday" property="birthday"/>
+        <result column="Location" property="location"/>
+        <result column="Bio" property="bio"/>
+    </resultMap>
+
+    <insert id="addUserInfo" parameterType="com.bean.UserInfo">
+        INSERT INTO UserInfo (UserUid, Nickname, Gender, Birthday, Location, Bio)
+        VALUES (#{useruid}, #{nickname}, #{gender}, #{birthday}, #{location}, #{bio})
+    </insert>
+
+    <update id="updateUserInfo" parameterType="com.bean.UserInfo">
+        UPDATE UserInfo
+        SET Nickname = #{nickname}, Gender = #{gender}, Birthday = #{birthday}, Location = #{location}, Bio = #{bio}
+        WHERE UserUid = #{useruid}
+    </update>
+
+    <select id="selectUserInfoByPage" parameterType="map" resultMap="UserInfoResultMap">
+        <include refid="selectUserInfoByPageSql"/>
+    </select>
+
+    <sql id="selectUserInfoByPageSql">
+        SELECT *
+        FROM (
+        SELECT u.*, ROW_NUMBER() OVER(ORDER BY UserUid) AS rownum
+        FROM UserInfo u
+        WHERE 1=1
+        <if test='userInfo.nickname!= null'>
+            AND Nickname LIKE '%' + #{userInfo.nickname} + '%'
+        </if>
+        <if test='userInfo.gender!= null'>
+            AND Gender LIKE '%' + #{userInfo.gender} + '%'
+        </if>
+        ) AS t
+        WHERE rownum BETWEEN (#{page} - 1) * #{limit} + 1 AND #{page} * #{limit}
+    </sql>
+
+    <select id="selectByPageCount" parameterType="com.bean.UserInfo" resultType="long">
+        SELECT COUNT(*)
+        FROM UserInfo u
+        WHERE 1=1
+        <if test='userInfo.nickname!= null'>
+            AND Nickname LIKE '%' + #{userInfo.nickname} + '%'
+        </if>
+        <if test='userInfo.gender!= null'>
+            AND Gender LIKE '%' + #{userInfo.gender} + '%'
+        </if>
+    </select>
+
+</mapper>
