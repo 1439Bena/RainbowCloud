@@ -13,20 +13,15 @@
         <result column="Registrationtime" property="registrationtime"/>
         <result column="Astatus" property="astatus"/>
 
-        <association column="Nickname" property="userinfo" javaType="com.bean.UserInfo">
+        <association column="UserUid" property="userinfo" javaType="com.bean.UserInfo">
+            <result column="UserUid" property="useruid"/>
             <result column="Nickname" property="nickname"/>
+            <result column="Gender" property="gender"/>
+            <result column="Birthday" property="birthday"/>
+            <result column="Location" property="location"/>
+            <result column="Bio" property="bio"/>
         </association>
     </resultMap>
-
-    <insert id="addAccount" parameterType="com.bean.AccountInfo">
-        INSERT INTO Accountinfo (Uid, Username, Password, Avatar, Email, Aphone, Registrationtime, Astatus)
-        VALUES (#{uid}, #{username}, #{password}, #{avatar}, #{email}, #{aphone}, #{registrationtime}, #{astatus})
-    </insert>
-
-    <insert id="signUpAccount" parameterType="com.bean.AccountInfo">
-        INSERT INTO Accountinfo (Uid, Username, Password, Email, Registrationtime, Astatus)
-        VALUES (#{uid}, #{username}, #{password}, #{email}, #{registrationtime}, #{astatus})
-    </insert>
 
     <select id="signInAccount" parameterType="map" resultMap="AccountResultMap">
         SELECT a.*, u.Nickname
@@ -83,6 +78,13 @@
         <if test='accountInfo.email!= null'>
             AND a.Email LIKE '%' + #{accountInfo.email} + '%'
         </if>
+    </select>
+
+    <select id="selectSomeOneAccount" resultMap="AccountResultMap">
+        SELECT a.*, u.*
+        FROM Accountinfo a
+                 JOIN UserInfo u ON a.Uid = u.UserUid
+        WHERE a.Uid = #{uid}
     </select>
     <!-- Add more SQL mappings as needed -->
 </mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapper.FollowMapper">
+    <!--    关注一个账号           -->
+    <insert id="insertFollow" parameterType="com.bean.Follow">
+        insert into Follow(Fid, Follower, Followee, Fstatus)
+        values (#{Fid}, #{Follower}, #{Followee}, #{Fstatus})
+    </insert>
+
+    <!--    是否关注某个账号-->
+    <select id="checkFollow" resultType="int">
+        SELECT COUNT(Fid)
+        FROM Follow
+        WHERE Follower = #{Follower}
+          AND Followee = #{Followee}
+    </select>
+
+    <!--取消关注-->
+    <update id="unFollow">
+        UPDATE Follow
+        SET Fstatus = 1
+        WHERE Follower = #{Follower}
+          AND Followee = #{Followee}
+    </update>
+
+    <!--    恢复关注-->
+    <update id="recoverFollow">
+        UPDATE Follow
+        SET Fstatus = 0
+        WHERE Follower = #{Follower}
+          AND Followee = #{Followee}
+    </update>
+
+    <!--    查询一个账号的粉丝数    -->
+    <select id="selectFollowee" resultType="long">
+        select COUNT(Fid)
+        from Follow
+        where Followee = #{Followee}
+          and Fstatus = 0
+    </select>
+
+    <!--    查询一个账号的关注数    -->
+    <select id="selectFollower" resultType="long">
+        select COUNT(Fid)
+        from Follow
+        where Follower = #{Follower}
+          and Fstatus = 0
+    </select>
+</mapper>

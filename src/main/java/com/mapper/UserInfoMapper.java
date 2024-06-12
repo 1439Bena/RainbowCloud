@@ -45,4 +45,12 @@ public interface UserInfoMapper {
      * @return {@link Long }
      */
     Long selectByPageCount(@Param("userInfo") UserInfo userInfo);
+
+    /**
+     * 查询某个用户信息
+     *
+     * @param useruid 用户id
+     * @return {@link UserInfo }
+     */
+    UserInfo selectSomeOneUserInfo(@Param("useruid") String useruid);
 }

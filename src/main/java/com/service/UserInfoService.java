@@ -31,4 +31,8 @@ public class UserInfoService {
     public int updateUser(UserInfo userInfo) {
         return userInfoMapper.updateUserInfo(userInfo);
     }
+
+    public UserInfo getSomeOneUserInfo(String useruid) {
+        return userInfoMapper.selectSomeOneUserInfo(useruid);
+    }
 }

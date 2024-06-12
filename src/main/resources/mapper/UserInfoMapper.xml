@@ -14,13 +14,17 @@
     </resultMap>
 
     <insert id="addUserInfo" parameterType="com.bean.UserInfo">
-        INSERT INTO UserInfo (UserUid, Nickname, Gender, Birthday, Location, Bio)
-        VALUES (#{useruid}, #{nickname}, #{gender}, #{birthday}, #{location}, #{bio})
+        INSERT INTO UserInfo (UserUid, Nickname)
+        VALUES (#{useruid}, #{nickname})
     </insert>
 
     <update id="updateUserInfo" parameterType="com.bean.UserInfo">
         UPDATE UserInfo
-        SET Nickname = #{nickname}, Gender = #{gender}, Birthday = #{birthday}, Location = #{location}, Bio = #{bio}
+        SET Nickname = #{nickname},
+            Gender   = #{gender},
+            Birthday = #{birthday},
+            Location = #{location},
+            Bio      = #{bio}
         WHERE UserUid = #{useruid}
     </update>
 
@@ -56,4 +60,10 @@
         </if>
     </select>
 
+    <!--    查询某个账户的用户信息-->
+    <select id="selectSomeOneUserInfo" resultMap="UserInfoResultMap">
+        SELECT UserUid, Nickname, Gender, Birthday, Location, Bio
+        FROM UserInfo
+        WHERE UserUid = #{useruid}
+    </select>
 </mapper>

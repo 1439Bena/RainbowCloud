@@ -1,5 +1,6 @@
 package com.controller.user;
 
+import com.controller.base.BaseController;
 import com.service.ThumbsupService;
 import com.utils.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +15,23 @@ import org.springframework.web.bind.annotation.RestController;
  * 2024-01-06
  */
 @RestController
-public class ThumbsupController {
+public class ThumbsupController extends BaseController {
     @Autowired
     private ThumbsupService service;
 
+    @RequestMapping("/GetLikesCount")
+    protected String getLikeCount(@RequestParam("uid") String uid) {
+        long count = service.selectLikeCount(uid);
+
+        return print(successJson(count));
+    }
     @RequestMapping(value = "/like", method = RequestMethod.POST)
     public ResponseEntity<String> likePost(@RequestParam("pid") String pid, @RequestParam("uid") String uid) {
         try {
             if (service.checkLiked(pid, uid)) {
-                return ResponseEntity.ok("Already liked");
+                if (service.recoverLike(pid, uid)) {
+                    return ResponseEntity.ok("Already liked");
+                }
             }
 
             String tid = "Like-" + RandomUtils.GetRandomNumber(8, 0, 9);

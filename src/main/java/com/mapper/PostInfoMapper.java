@@ -16,7 +16,7 @@ public interface PostInfoMapper {
     /**
      * 点赞计数
      *
-     * @param pid PID公司
+     * @param pid 帖子Id
      * @return long
      */
     @Select("SELECT COUNT(Tid) FROM Thumbsup WHERE Tpostid = #{pid} AND Tstatus = 1")
@@ -25,7 +25,7 @@ public interface PostInfoMapper {
     /**
      * 按用户获取点赞数
      *
-     * @param pid PID公司
+     * @param pid 帖子Id
      * @param uid UID 接口
      * @return int
      */
@@ -52,7 +52,7 @@ public interface PostInfoMapper {
     /**
      * 选择帖子信息
      *
-     * @param pid PID公司
+     * @param pid 帖子Id
      * @param uid UID 接口
      * @return {@link PostInfo }
      */

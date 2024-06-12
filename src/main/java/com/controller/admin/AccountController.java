@@ -97,4 +97,11 @@ public class AccountController extends BaseController {
         String head = new ImageUtils().byteToString(avatar);
         return print(successJson(head));
     }
+
+    @RequestMapping("/{uid}")
+    public String getSomeOneAccount(@PathVariable("uid") String uid){
+        AccountInfo accountInfo = service.selectSomeOneAccount(uid);
+
+        return print(successJson(accountInfo));
+    }
 }

@@ -8,6 +8,7 @@ import com.utils.RandomUtils;
 import com.utils.impl.VideoUtils;
 import com.vo.PageVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,14 +50,14 @@ public class PostController extends BaseController {
     }
 
     @RequestMapping("UploadVideo")
-    protected String UploadVideo(HttpServletRequest request) throws ServletException, IOException {
+    public String UploadVideo(HttpServletRequest request) throws ServletException, IOException {
         String url = new VideoUtils().StoreVideo(request, "wangeditor-uploaded-video");
 
         return pring(successUploadVideo(url));
     }
 
     @RequestMapping("/PubPost")
-    protected String PubPost(HttpServletRequest request) throws Exception {
+    public String PubPost(HttpServletRequest request) throws Exception {
         final String undefined = "undefined";
 
         String pcontent = request.getParameter("pcontent");
@@ -81,19 +82,22 @@ public class PostController extends BaseController {
 
         int row = service.pubPost(post);
         if (row > 0) {
-            return print(successJson(null));
+            Post recentPost = service.RecentPost(post.getPid());
+
+            return print(successJson(recentPost));
         } else {
             return print(errorJson());
         }
     }
+
     @RequestMapping("/PubCommentOrReply")
-    protected String PubCommentOrReply(HttpServletRequest request) throws Exception {
+    public String PubCommentOrReply(HttpServletRequest request) throws Exception {
         String pcontent = request.getParameter("pcontent");
         String publisheruid = request.getParameter("publisheruid");
         String parentId = request.getParameter("parentId");
 
         Post post = new Post();
-        post.setPid("Post_" + RandomUtils.GetRandomNumber(8, 0, 9));
+        post.setPid("Reply_" + RandomUtils.GetRandomNumber(8, 0, 9));
         post.setPcontent(pcontent);
         post.setParentid(parentId);
 
@@ -103,11 +107,41 @@ public class PostController extends BaseController {
         post.setPtime(new Date());
         post.setPstatus("正常");
 
-        int row = service.pubPost(post);
+        int row = service.pubCommentAndReply(post);
         if (row > 0) {
-            return print(successJson(null));
+            Post recentPost = service.RecentPost(post.getPid());
+
+            return print(successJson(recentPost));
         } else {
             return print(errorJson());
         }
+    }
+
+    @RequestMapping("/GetPost/{publisher}")
+    public String getSomeOnePost(@PathVariable("publisher") String publisher) {
+        List<Post> someOnePost = service.getSomeOnePost(publisher);
+
+        return print(successJson(someOnePost));
+    }
+
+    @RequestMapping("/GetPostCount")
+    public String getSomeOnePostCountAccount(@RequestParam("uid") String uid) {
+        long count = service.selectPostCount(uid);
+
+        return print(successJson(count));
+    }
+
+    @RequestMapping("/GetComment/{publisher}")
+    public String getSomeOneComment(@PathVariable("publisher") String publisher) {
+        List<Post> someOneComment = service.getSomeOneComment(publisher);
+
+        return print(successJson(someOneComment));
+    }
+
+    @RequestMapping("/GetLikesPost/{UserUid}")
+    public String getLikesPost(@PathVariable("UserUid") String UserUid) {
+        List<Post> likesPost = service.getLikesPost(UserUid);
+
+        return print(successJson(likesPost));
     }
 }

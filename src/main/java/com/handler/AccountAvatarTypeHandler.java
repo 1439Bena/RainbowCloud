@@ -16,7 +16,7 @@ import java.sql.SQLException;
 public class AccountAvatarTypeHandler extends BaseTypeHandler<String> {
     @Override
     public void setNonNullParameter(PreparedStatement preparedStatement, int i, String s, JdbcType jdbcType) throws SQLException {
-        preparedStatement.setString(i, s);
+        preparedStatement.setBytes(i, new ImageUtils().stringToByte(s));
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.mapper;
 import com.bean.Post;
 import org.apache.ibatis.annotations.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,8 +35,8 @@ public interface PostMapper {
     /**
      * 按页面选择
      *
-     * @param page 开始
-     * @param limit   结束
+     * @param page  开始
+     * @param limit 结束
      * @return {@link List }<{@link Post }>
      */
     @Select({
@@ -109,42 +110,182 @@ public interface PostMapper {
 
     /**
      * 递归获取评论及其回复
+     *
      * @param comment 要获取回复的评论
      */
-    default void retrieveReplies(Post comment){
+    default void retrieveReplies(Post comment) {
         // 获取该评论的回复
         List<Post> replies = selectComments(comment.getPid());
 
-        // 设置回复列表到评论中
-        comment.setComments(replies);
+        if (replies != null) {
+            // 设置回复列表到评论中
+            comment.setComments(replies);
 
-        // 递归处理每条回复
-        for(Post reply : replies){
-            retrieveReplies(reply);
+            // 递归处理每条回复
+            for (Post reply : replies) {
+                retrieveReplies(reply);
+            }
+        } else {
+            // 如果回复列表为空，则将空列表设置到评论中
+            comment.setComments(new ArrayList<>());
         }
     }
 
+
     /**
      * 查询帖子的评论以及回复
+     *
      * @param pid 帖子编号
      * @return {@link Post }
      */
-    default Post selectPostAndComment(@Param("pid") String pid){
+    default Post selectPostAndComment(@Param("pid") String pid) {
         // 获取帖子信息
         Post post = selectPost(pid);
 
-        // 获取评论列表
-        List<Post> comments = selectComments(pid);
+        if (post != null) {
+            // 获取评论列表
+            List<Post> comments = selectComments(pid);
 
-        // 将评论列表设置到帖子信息中
-        post.setComments(comments);
+            if (comments != null) {
+                // 将评论列表设置到帖子信息中
+                post.setComments(comments);
 
-        // 遍历每条评论，递归获取回复
-        for(Post comment : comments){
-            retrieveReplies(comment);
+                // 遍历每条评论，递归获取回复
+                for (Post comment : comments) {
+                    retrieveReplies(comment);
+                }
+            } else {
+                // 如果评论列表为空，则将空列表设置到帖子信息中
+                post.setComments(new ArrayList<>());
+            }
         }
 
         return post;
     }
 
+
+    /**
+     * 查询一个AccountInfo下的所有帖子和评论及其回复的总获赞数
+     *
+     * @param uid
+     * @return long
+     */
+    @Select("SELECT Pid FROM Post WHERE Publisher = #{uid} AND Pstatus = '正常'")
+    List<String> selectTotalPid(String uid);
+
+    /**
+     * 查询一个AccountInfo下的帖子总数
+     *
+     * @param uid UID 用户id
+     * @return long
+     */
+    @Select("SELECT COUNT(Pid) FROM Post WHERE Publisher = #{uid} And Parentid IS NULL AND Pstatus = '正常'")
+    long selectTotalPost
+    (String uid);
+
+    /**
+     * 返回 最近 发布帖子 或 评论
+     *
+     * @param pid 帖子或评论编号
+     * @return {@link List }<{@link Post }>
+     */
+    @Select("SELECT Post.*, UserInfo.UserUid, UserInfo.Nickname, Accountinfo.Username, Accountinfo.Avatar " +
+            "FROM Post " +
+            "JOIN UserInfo ON Post.Publisher = UserInfo.UserUid " +
+            "JOIN Accountinfo ON Post.Publisher = Accountinfo.Uid " +
+            "WHERE Pstatus = '正常' AND Pid = #{pid} ")
+    @ResultMap("PostResultMap")
+    Post selectRecentPost(String pid);
+
+    /**
+     * 查询一个帐户发布的所有帖子
+     *
+     * @param publisher 发行人
+     * @return {@link List }<{@link Post }>
+     */
+    @Select("SELECT Post.*, UserInfo.UserUid, UserInfo.Nickname, Accountinfo.Username, Accountinfo.Avatar " +
+            "FROM Post " +
+            "JOIN UserInfo ON Post.Publisher = UserInfo.UserUid " +
+            "JOIN Accountinfo ON Post.Publisher = Accountinfo.Uid " +
+            "WHERE Parentid IS NULL AND Pstatus = '正常' AND Publisher = #{publisher} ")
+    @ResultMap("PostResultMap")
+    List<Post> selectPostByAccount(String publisher);
+
+    /**
+     * 查询一个帐户发布的所有评论
+     *
+     * @param publisher 发行人
+     * @return {@link List }<{@link Post }>
+     */
+    @Select("SELECT Post.*, UserInfo.UserUid, UserInfo.Nickname, Accountinfo.Username, Accountinfo.Avatar " +
+            "FROM Post " +
+            "JOIN UserInfo ON Post.Publisher = UserInfo.UserUid " +
+            "JOIN Accountinfo ON Post.Publisher = Accountinfo.Uid " +
+            "WHERE Parentid IS NOT NULL AND Pstatus = '正常' AND Publisher = #{publisher} ")
+    @ResultMap("PostResultMap")
+    List<Post> selectCommentByAccount(String publisher);
+
+    /**
+     * 查询 评论 的父项帖子
+     *
+     * @param publisher 发布人
+     * @return {@link List }<{@link Post }>
+     */
+    default List<Post> selectCommentParent(String publisher) {
+        List<Post> parentPost = new ArrayList<>();
+
+        List<Post> comments = selectCommentByAccount(publisher);
+
+        if (comments != null) {
+            for (Post comment : comments) {
+                Post parent = selectPost(comment.getParentid());
+
+                if (parent != null) {
+                    List<Post> parentComment = new ArrayList<>();
+                    parentComment.add(comment);
+
+                    parent.setComments(parentComment);
+                    parentPost.add(parent);
+                }
+            }
+        }
+
+        return parentPost;
+    }
+
+    /**
+     * 选择喜欢帖子
+     *
+     * @param pId 帖子 ID
+     * @return {@link List }<{@link Post }>
+     */
+    @Select("SELECT Post.*, UserInfo.UserUid, UserInfo.Nickname, Accountinfo.Username, Accountinfo.Avatar " +
+            "FROM Post " +
+            "JOIN UserInfo ON Post.Publisher = UserInfo.UserUid " +
+            "JOIN Accountinfo ON Post.Publisher = Accountinfo.Uid " +
+            "WHERE Parentid IS NULL AND Pstatus = '正常' AND Pid = #{pId}")
+    @ResultMap("PostResultMap")
+    Post selectLikePost(String pId);
+
+    /**
+     * 查询所有点赞帖子
+     *
+     * @param pIds P ID
+     * @return {@link List }<{@link Post }>
+     */
+    default List<Post> selectLikesPost(List<String> pIds){
+        List<Post> posts = new ArrayList<>();
+
+        if (pIds != null) {
+            for (String pId : pIds) {
+                Post post = selectLikePost(pId);
+
+                if (post != null){
+                    posts.add(post);
+                }
+            }
+        }
+
+        return posts;
+    }
 }

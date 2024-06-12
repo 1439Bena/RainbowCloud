@@ -18,6 +18,8 @@ public interface AccountMapper {
      * @param accountInfo 个人信息
      * @return int
      */
+    @Insert("INSERT INTO Accountinfo (Uid, Username, Password, Avatar, Email, Aphone, Registrationtime, Astatus) " +
+            "VALUES (#{uid}, #{username}, #{password}, #{avatar, typeHandler=com.handler.AccountAvatarTypeHandler}, #{email}, #{aphone}, #{registrationtime}, #{astatus})")
     int addAccount(AccountInfo accountInfo);
 
     /**
@@ -26,6 +28,8 @@ public interface AccountMapper {
      * @param accountInfo 个人信息
      * @return int
      */
+    @Insert("INSERT INTO Accountinfo (Uid, Username, Password, Avatar, Email, Aphone, Registrationtime, Astatus) " +
+            "VALUES (#{uid}, #{username}, #{password}, #{avatar, typeHandler=com.handler.AccountAvatarTypeHandler}, #{email}, #{aphone}, #{registrationtime}, #{astatus})")
     int signUpAccount(AccountInfo accountInfo);
 
     /**
@@ -73,4 +77,12 @@ public interface AccountMapper {
      * @return {@link Long }
      */
     Long selectByPageCount(@Param("accountInfo") AccountInfo accountInfo);
+
+    /**
+     * 查询某个帐户信息
+     *
+     * @param uid UID 账号id
+     * @return {@link AccountInfo }
+     */
+    AccountInfo selectSomeOneAccount(@Param("uid") String uid);
 }

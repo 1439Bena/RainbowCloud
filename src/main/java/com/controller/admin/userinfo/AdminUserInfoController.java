@@ -17,7 +17,7 @@ import java.util.List;
  * 2023-12-06
  */
 @RestController
-public class UserInfoController extends BaseController {
+public class AdminUserInfoController extends BaseController {
     @Autowired
     private UserInfoService service;
     @RequestMapping("/GetUser")

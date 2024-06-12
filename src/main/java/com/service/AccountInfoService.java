@@ -43,4 +43,8 @@ public class AccountInfoService {
     public int addAccount(AccountInfo accountInfo) {
         return accountMapper.addAccount(accountInfo);
     }
+
+    public AccountInfo selectSomeOneAccount(String uid){
+        return accountMapper.selectSomeOneAccount(uid);
+    }
 }
